@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: url-shortener
+    name: xhort
     runtime: docker
     plan: free            # use "starter" if you add the disk below
     healthCheckPath: /healthz
