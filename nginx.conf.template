@@ -1,0 +1,30 @@
+pid /tmp/nginx.pid;
+events { worker_connections 4096; }
+http {
+  access_log off;
+  map $http_upgrade $conn_up { default upgrade; '' ""; }
+
+  server {
+    listen ${PORT};
+
+    # Short-link API, health check and 7-char redirect codes -> balancer
+    location ~ ^/(api/|healthz$|[0-9A-Za-z]{7}$) {
+      proxy_pass http://127.0.0.1:8080;
+      proxy_http_version 1.1;
+      proxy_set_header Connection "";
+      proxy_set_header Host $host;
+      # rate limiter keys on this; without it every user looks like 127.0.0.1
+      proxy_set_header X-Client-Id $http_x_forwarded_for;
+    }
+
+    # Everything else (/, /_stcore/*, /static/*) -> Streamlit (websockets)
+    location / {
+      proxy_pass http://127.0.0.1:8501;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $conn_up;
+      proxy_set_header Host $host;
+      proxy_read_timeout 3600s;
+    }
+  }
+}

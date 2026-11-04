@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: url-shortener
+    runtime: docker
+    plan: free            # use "starter" if you add the disk below
+    healthCheckPath: /healthz
+    envVars:
+      - key: WORKERS
+        value: "2"
+    # Paid plans only: keeps SQLite across restarts/deploys.
+    # disk:
+    #   name: data
+    #   mountPath: /var/data
+    #   sizeGB: 1
+    # ...and add env var URLSHORT_DB=/var/data/urls.db
